@@ -1,1 +1,1 @@
-# bitbucket-data-center-trial-
+# bitbucket-data-center-trial
