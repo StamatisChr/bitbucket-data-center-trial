@@ -21,7 +21,5 @@ runcmd:
  - ufw allow in on docker0
  - mkdir -p /opt/bbdc/certs
  - mkdir -p /opt/bbdc/data
-# Spawn Certbot container to generate TLS certificates
- - docker run --rm -p 80:80 -v /opt/bbdc/certs:/etc/letsencrypt/archive/${bbdc_hostname} certbot/certbot certonly --standalone --non-interactive --agree-tos --register-unsafely-without-email --preferred-challenges http -d ${bbdc_hostname}
 # Start Bitbucket Data Center container
- - docker run -v /opt/bbdc/data:/var/atlassian/application-data/bitbucket --name="bitbucket" -d -p 80:7990 -p 443:7999 atlassian/bitbucket
+ - docker run -v /opt/bbdc/data:/var/atlassian/application-data/bitbucket --name="bitbucket" -d -p 7990:7990 -p 7999:7999 atlassian/bitbucket

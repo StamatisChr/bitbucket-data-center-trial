@@ -5,14 +5,15 @@ resource "random_pet" "hostname_suffix" {
 ##### EC2 instance #####
 # create ec2 instance
 resource "aws_instance" "docker_instance" {
-  ami             = data.aws_ami.ubuntu_2404.id
-  instance_type   = var.tfe_instance_type
-  key_name        = var.my_key_name # the key is region specific
-  security_groups = [aws_security_group.bbtest.name]
+  ami                  = data.aws_ami.ubuntu_2404.id
+  instance_type        = var.tfe_instance_type
+  key_name             = var.my_key_name # the key is region specific
+  security_groups      = [aws_security_group.bbtest.name]
+  iam_instance_profile = aws_iam_instance_profile.ssm_access.name
 
   user_data = templatefile("./templates/user_data_cloud_init.tftpl", {
-    bbdc_hostname                  = "bbdc-${random_pet.hostname_suffix.id}.${var.hosted_zone_name}"
-    
+    bbdc_hostname = "bbdc-${random_pet.hostname_suffix.id}.${var.hosted_zone_name}"
+
   })
 
   ebs_optimized = true
@@ -43,28 +44,28 @@ resource "aws_security_group" "bbtest" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "port_443_https" {
-  security_group_id = aws_security_group.bbtest.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  ip_protocol       = "tcp"
-  to_port           = 443
-}
-
-resource "aws_vpc_security_group_ingress_rule" "port_80_http" {
-  security_group_id = aws_security_group.bbtest.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  ip_protocol       = "tcp"
-  to_port           = 80
-}
-
 resource "aws_vpc_security_group_ingress_rule" "port_22_ssh" {
   security_group_id = aws_security_group.bbtest.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 22
   ip_protocol       = "tcp"
   to_port           = 22
+}
+
+resource "aws_vpc_security_group_ingress_rule" "port_7999_ssh" {
+  security_group_id = aws_security_group.bbtest.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 7999
+  ip_protocol       = "tcp"
+  to_port           = 7999
+}
+
+resource "aws_vpc_security_group_ingress_rule" "port_7990_web" {
+  security_group_id = aws_security_group.bbtest.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 7990
+  ip_protocol       = "tcp"
+  to_port           = 7990
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_outbound_traffic_ipv4" {
@@ -79,4 +80,31 @@ resource "aws_route53_record" "tfe-a-record" {
   type    = "A"
   ttl     = 120
   records = [aws_eip.bbdc_eip.public_ip]
+}
+
+resource "aws_iam_role" "ssm_access" {
+  name = "ssm_access"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
+      Principal = { Service = "ec2.amazonaws.com" }
+    }]
+  })
+
+  tags = {
+    Name = "stam-${random_pet.hostname_suffix.id}"
+  }
+}
+
+resource "aws_iam_instance_profile" "ssm_access" {
+  name = "ssm_access_profile"
+  role = aws_iam_role.ssm_access.name
+}
+
+resource "aws_iam_role_policy_attachment" "SSM" {
+  role       = aws_iam_role.ssm_access.name
+  policy_arn = data.aws_iam_policy.SecurityComputeAccess.arn
 }
