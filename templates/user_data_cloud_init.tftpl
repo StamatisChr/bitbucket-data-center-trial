@@ -1,0 +1,27 @@
+#cloud-config
+package_update: true
+
+groups:
+ - docker
+
+system_info:
+  default_user:
+    groups: [ docker ] 
+
+runcmd:
+ - apt-get update
+ - apt-get install ca-certificates curl
+ - install -m 0755 -d /etc/apt/keyrings
+ - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+ - chmod a+r /etc/apt/keyrings/docker.asc
+ - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+ - apt-get update
+ - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+ - usermod -a -G docker ubuntu
+ - ufw allow in on docker0
+ - mkdir -p /opt/bbdc/certs
+ - mkdir -p /opt/bbdc/data
+# Spawn Certbot container to generate TLS certificates
+ - docker run --rm -p 80:80 -v /opt/bbdc/certs:/etc/letsencrypt/archive/${bbdc_hostname} certbot/certbot certonly --standalone --non-interactive --agree-tos --register-unsafely-without-email --preferred-challenges http -d ${bbdc_hostname}
+# Start Bitbucket Data Center container
+ - docker run -v /opt/bbdc/data:/var/atlassian/application-data/bitbucket --name="bitbucket" -d -p 80:7990 -p 443:7999 atlassian/bitbucket
