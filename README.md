@@ -1,4 +1,17 @@
-# bitbucket-data-center-trial
+# Bitbucket Data Center trial
+
+## What is this guide about?
+
+Spawn an AWS EC2 instance with Bitbucket Data Center instance for testing.
+
+## Prerequisites
+
+- AWS account with access to AWS EC2 and Route53 services.
+- A DNS zone hosted on AWS Route53
+- Git installed on your computer
+- Terraform installed on your computer
+
+## Set AWS credentials
 
 Export your AWS access key and secret access key as environment variables:
 ```
@@ -9,6 +22,7 @@ export AWS_ACCESS_KEY_ID=<your_access_key_id>
 export AWS_SECRET_ACCESS_KEY=<your_secret_key>
 ```
 
+## Spawn the infrastrusture
 
 Clone the repository to your computer.
 
