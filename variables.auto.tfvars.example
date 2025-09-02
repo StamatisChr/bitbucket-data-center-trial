@@ -1,3 +1,3 @@
-my_key_name             = "<ssh_key_name>" # Saved on AWS EC2 and is region specific
-hosted_zone_name        = "<hosted_zone_name>"
-aws_region              = "<aws_region>"
+
+hosted_zone_name        = "<hosted_zone_name>"  # 
+aws_region              = "<aws_region>"        # example "eu-west-1"

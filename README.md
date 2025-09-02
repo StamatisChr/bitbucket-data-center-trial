@@ -39,7 +39,6 @@ vim variables.auto.tfvars
 # do not change the variable names on the left column
 # replace only the values in the "< >" placeholders
 
-my_key_name             = "<ssh_key_name>" # Saved on AWS EC2 and is region specific
 hosted_zone_name        = "<hosted_zone_name>"
 aws_region              = "<aws_region>"
 ```
@@ -67,3 +66,22 @@ Do you want to perform these actions?
   Enter a value: 
 ```
 Wait until you see the apply completed message and the output values. 
+
+Example output:
+```
+Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+bitbucket-fqdn = "bitbucket-faithful-chipmunk.stamatios-chrysinas.sbx.hashidemos.io:7990"
+start_aws_ssm_session = "aws ssm start-session --target i-055e9c0d6503400b4 --region eu-west-1"
+```
+
+## Clean up
+
+To delete the resources, run:
+```
+terraform destroy --auto-approve
+```
+
+Done.
